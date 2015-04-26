@@ -173,7 +173,6 @@ public class Connection extends Thread {
                 {
                     ss.broadcast(ss.getOnlineUserList());
                 }
-
             }
 
             /* } //Try to terminate the socket if the user exit, need to modify at the close signal from gui or user try to log out

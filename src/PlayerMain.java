@@ -27,7 +27,7 @@ public class PlayerMain {
 		ClientModel model = new ClientModel();	//constructor for adminModel
 		SocketClient sock = null;
 		try {
-			sock = new SocketClient(args[0]);
+			sock = new SocketClient();
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

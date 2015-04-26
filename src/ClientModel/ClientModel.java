@@ -12,6 +12,8 @@ package ClientModel;
 import Controller.*;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class ClientModel {
@@ -39,6 +41,16 @@ public class ClientModel {
      */
     public void addController(Controller newController) {
         list.add(newController);
+    }
+    
+    public void runTCP(){
+        try {
+            sock = new SocketClient();
+            sock.setModel(this);
+            sock.createListener();
+        } catch (IOException ex) {
+            Logger.getLogger(ClientModel.class.getName()).log(Level.SEVERE, null, ex);
+        }        
     }
 
     /**
@@ -68,22 +80,34 @@ public class ClientModel {
      *
      * @param update - chat message from the server.
      */
-    public void update(String update) {
+    public void updateChat(String update) {
         //DEBUG
         System.out.println("update is active");
 
         for (Controller c : list) {
-
             if (c.ID.equals("MatchCtrl") && chat == true) {
                 contMatch = (MatchCont) c;
                 contMatch.updateModelMsg(update);
-            } else if (c.ID.equals("MatchCtrl") && userList == true) {
-                contMatch = (MatchCont) c;
-
-                contMatch.setAvailableList(update);
             }
         }
     } //end update
+    
+    /**
+     * Update the online user list - server message into the MatchMaking controller.
+     *
+     * @param update - online user list from the server.
+     */
+    public void updateOnlineList(String update) {
+        //DEBUG
+        System.out.println("update is active");
+
+        for (Controller c : list) {
+            if (c.ID.equals("MatchCtrl") && userList == true) {
+                contMatch = (MatchCont) c;
+                contMatch.setAvailableList(update);
+            }
+        }
+    } //end updateOnlineList. 
 
     /**
      * Write the user information into the I/O stream to the server
@@ -94,9 +118,10 @@ public class ClientModel {
 
         try {
             sock.writeUserMessage(usrInfo);
-            if (usrInfo.equals("close")) {	//Close the socket if user logout or disconnected 
+            if (usrInfo.equals("close") || usrInfo.equals("back")) {	//Close the socket if user logout or disconnected 
                 sock.close();
-                System.exit(0);
+                sock = null;
+                //System.exit(0);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,7 +202,7 @@ public class ClientModel {
             case "chat":
                 chat = true;
                 String chatMsg = split[1];
-                this.update(chatMsg + "\n");
+                this.updateChat(chatMsg + "\n");
                 break;
             case "loginSuccess":
                 temp = true;
@@ -200,7 +225,7 @@ public class ClientModel {
                 //DEBUG
                 System.out.println("From the list of server: " + msg);
                 userList = true;
-                this.update(msg);
+                this.updateOnlineList(msg);
 
                 break;
             default:
